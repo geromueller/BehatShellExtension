@@ -48,6 +48,8 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     public function iRun($command, $server = 'default')
     {
+        $server = str_replace('-', '_', $server);
+
         if (!isset($this->config[$server])) {
             throw new \Exception(sprintf('Configuration not found for server "%s"', $server));
         }
@@ -177,6 +179,10 @@ class ShellContext implements Context, SnippetAcceptingContext
                 $process = $this->createDockerProcess($command, $serverConfig);
                 break;
 
+            case 'vagrant':
+                $process = $this->createVagrantProcess($command, $serverConfig);
+                break;
+
             default:
                 $process = $this->createLocalProcess($command, $serverConfig);
                 break;
@@ -221,6 +227,30 @@ class ShellContext implements Context, SnippetAcceptingContext
         );
 
         return new Process($command);
+    }
+
+    /**
+     * @param string $command
+     * @param array  $serverConfig
+     *
+     * @return Process
+     */
+    private function createVagrantProcess($command, array $serverConfig)
+    {
+        if ($serverConfig['base_dir']) {
+            $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
+        }
+
+        $command = sprintf(
+            'vagrant ssh -- %s',
+            escapeshellarg($command)
+        );
+
+        if ($serverConfig['vagrant_cwd']) {
+            return new Process($command, $serverConfig['vagrant_cwd']);
+        } else {
+            return new Process($command);
+        }
     }
 
     /**
