@@ -42,7 +42,7 @@ class Extension implements \Behat\Testwork\ServiceContainer\Extension
                     ->enumNode('type')->values(['local', 'remote', 'docker', 'vagrant'])->defaultValue('local')->end()
                     ->scalarNode('base_dir')->defaultNull()->end()
                     ->arrayNode('env')
-                        ->scalarPrototype()->end()
+                        ->prototype('scalar')->end()
                     ->end()
                     ->scalarNode('ssh_command')->defaultValue('ssh')->end()
                     ->scalarNode('scp_command')->defaultValue('scp')->end()
