@@ -197,12 +197,31 @@ class ShellContext implements Context, SnippetAcceptingContext
 
     /**
      * @param string $command
+     * @param array $nv
+     *
+     * @return string
+    */
+    private function prefixEnvToCommand($command, $env)
+    {
+        $prefix = '';
+        foreach ($env as $key => $value) {
+            $prefix .= sprintf("%s=%s ", $key, escapeshellarg($value));
+        }
+        return $prefix . $command;
+    }
+
+    /**
+     * @param string $command
      * @param array  $serverConfig
      *
      * @return Process
      */
     private function createLocalProcess($command, array $serverConfig)
     {
+        if ($serverConfig['env']) {
+            $command = $this->prefixEnvToCommand($command, $serverConfig['env']);
+        }
+
         return new Process($command, $serverConfig['base_dir']);
     }
 
@@ -214,6 +233,10 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     private function createRemoteProcess($command, array $serverConfig)
     {
+        if ($serverConfig['env']) {
+            $command = $this->prefixEnvToCommand($command, $serverConfig['env']);
+        }
+
         if ($serverConfig['base_dir']) {
             $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
         }
@@ -237,6 +260,10 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     private function createVagrantProcess($command, array $serverConfig)
     {
+        if ($serverConfig['env']) {
+            $command = $this->prefixEnvToCommand($command, $serverConfig['env']);
+        }
+
         if ($serverConfig['base_dir']) {
             $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
         }
@@ -261,6 +288,10 @@ class ShellContext implements Context, SnippetAcceptingContext
      */
     private function createDockerProcess($command, array $serverConfig)
     {
+        if ($serverConfig['env']) {
+            $command = $this->prefixEnvToCommand($command, $serverConfig['env']);
+        }
+
         if ($serverConfig['base_dir']) {
             $command = sprintf('cd %s ; %s', $serverConfig['base_dir'], $command);
         }
